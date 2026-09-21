@@ -15,7 +15,7 @@ const icon = (name) => `<svg aria-hidden="true"><use href="#icon-${name}" /></sv
 const renderProjects = () => {
   const query = searchInput.value.trim().toLowerCase();
   const visible = projects.filter((project) => (activeFilter === 'all' || project.category === activeFilter) && (!query || `${project.title} ${project.label} ${project.description} ${project.stack.join(' ')}`.toLowerCase().includes(query)));
-  projectGrid.innerHTML = visible.map((project) => `<article class="project-card"><div class="project-card-top"><span class="project-number">${project.number}</span><span class="project-category">${project.label}</span></div><h3>${project.title}</h3><p>${project.description}</p><div class="tags">${project.stack.map((tag) => `<span>${tag}</span>`).join('')}</div><div class="project-links"><a href="${project.demo}" target="_blank" rel="noreferrer">Live demo ${icon('arrow-up-right')}</a><a href="${project.repo}" target="_blank" rel="noreferrer">GitHub ${icon('external')}</a></div></article>`).join('');
+  projectGrid.innerHTML = visible.map((project, index) => `<article class="project-card scroll-reveal" style="--reveal-delay:${index * 70}ms"><div class="project-card-top"><span class="project-number">${project.number}</span><span class="project-category">${project.label}</span></div><h3>${project.title}</h3><p>${project.description}</p><div class="tags">${project.stack.map((tag) => `<span>${tag}</span>`).join('')}</div><div class="project-links"><a href="${project.demo}" target="_blank" rel="noreferrer">Live demo ${icon('arrow-up-right')}</a><a href="${project.repo}" target="_blank" rel="noreferrer">GitHub ${icon('external')}</a></div></article>`).join('');
   emptyState.hidden = visible.length > 0;
 };
 
@@ -37,5 +37,18 @@ document.querySelector('.footer-links').addEventListener('click', (event) => { c
 modal.addEventListener('click', (event) => { if (event.target.closest('[data-close-modal]')) { modal.hidden = true; document.body.classList.remove('modal-open'); } });
 document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !modal.hidden) { modal.hidden = true; document.body.classList.remove('modal-open'); } });
 
+const observeReveals = () => {
+  document.querySelectorAll('.section:not(.hero), .capability-card, .service-list article, .architecture-map, .contact-card').forEach((item, index) => {
+    item.classList.add('scroll-reveal');
+    item.style.setProperty('--reveal-delay', `${(index % 4) * 70}ms`);
+  });
+  const revealItems = document.querySelectorAll('.scroll-reveal');
+  if (!('IntersectionObserver' in window)) { revealItems.forEach((item) => item.classList.add('is-visible')); return; }
+  const observer = new IntersectionObserver((entries, currentObserver) => {
+    entries.forEach((entry) => { if (!entry.isIntersecting) return; entry.target.classList.add('is-visible'); currentObserver.unobserve(entry.target); });
+  }, { threshold: 0.14, rootMargin: '0px 0px -42px' });
+  revealItems.forEach((item) => observer.observe(item));
+};
+
 projectGrid.innerHTML = '<div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div>';
-window.setTimeout(renderProjects, 180);
+window.setTimeout(() => { renderProjects(); observeReveals(); }, 180);
