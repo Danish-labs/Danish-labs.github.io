@@ -1,3 +1,2 @@
 # danishportfolio.github.io
-# danishportfolio.github.io
-# danishportfolio.github.io
+https://danish-labs.github.io
